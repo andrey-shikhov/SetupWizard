@@ -1,0 +1,3 @@
+rootProject.name='SetupWizard'
+include ':app'
+include ':setupwizard'
