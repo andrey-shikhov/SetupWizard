@@ -14,7 +14,7 @@ class StageBuilder internal constructor(private val wizard: WizardImpl) {
         setup = action
     }
 
-    fun procede(action: Stage.() -> Unit) {
+    fun proceed(action: Stage.() -> Unit) {
         run = action
     }
 
@@ -32,10 +32,9 @@ class StageBuilder internal constructor(private val wizard: WizardImpl) {
     fun build(): Stage {
         return Stage(
             id,
+            wizard,
             setup,
             run,
-            teardown,
-            wizard::onStageFailed,
-            wizard::onStageDone)
+            teardown)
     }
 }

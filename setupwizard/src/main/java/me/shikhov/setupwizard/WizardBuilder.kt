@@ -23,11 +23,13 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
         onFailureCallback = onFailure
     }
 
-    internal fun build() {
+    internal fun build(): Wizard {
         wizard += stages
 
         onDoneCallback?.let {
             wizard.onDoneCallback = it
         }
+
+        return wizard
     }
 }

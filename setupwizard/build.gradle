@@ -17,7 +17,7 @@ ext {
     siteUrl = 'https://github.com/andrey-shikhov/SetupWizard'
     gitUrl = 'https://github.com/andrey-shikhov/SetupWizard.git'
 
-    libraryVersion = '0.5.0'
+    libraryVersion = '0.6.0'
 
     developerId = 'andrey-shikhov'
     developerName = 'Andrew Shikhov'
@@ -53,8 +53,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.1.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.1.0'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

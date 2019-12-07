@@ -1,13 +1,11 @@
 package me.shikhov.setupwizard
 
 import android.os.Handler
+import androidx.lifecycle.*
 
-fun wizard(init: WizardBuilder.() -> Unit): Wizard {
-    val w = WizardImpl()
-    val wb = WizardBuilder(w)
-    init(wb)
-    wb.build()
-    return w
+fun wizard(lifecycleOwner: LifecycleOwner? = null, init: WizardBuilder.() -> Unit): Wizard {
+    val w =  if(lifecycleOwner == null) WizardImpl() else LifecycleWizard(lifecycleOwner)
+    return WizardBuilder(w).apply(init).build()
 }
 
 infix fun Wizard.extend(init: WizardBuilder.() -> Unit) {
@@ -18,35 +16,56 @@ infix fun Wizard.extend(init: WizardBuilder.() -> Unit) {
 
 sealed class Wizard {
 
+    enum class State {
+        CREATED,
+        STARTED,
+        PAUSED,
+        DONE
+    }
+
+    abstract val state: State
+
     abstract val stageCount: Int
 
-    abstract val currentStage: Int
+    abstract val currentStageIndex: Int
+
+    abstract val onChange: LiveData<Stage>
 
     abstract fun start()
 
     abstract fun stop()
+
+    internal abstract fun onStageChanged(stage: Stage)
+
+    internal abstract fun onStageFailed(stage: Stage)
+
+    internal abstract fun onStageDone(stage: Stage)
 }
 
-internal class WizardImpl : Wizard() {
+internal open class WizardImpl : Wizard() {
 
-    internal var onDoneCallback: () -> Unit = { }
+    override val onChange = MutableLiveData<Stage>()
 
-    internal var onFailureCallback: () -> Unit = { }
+    var onDoneCallback: () -> Unit = { }
 
-    private val stages = mutableListOf<Stage>()
+    var onFailureCallback: () -> Unit = { }
 
-    private var currentStageIndex: Int = -1
-
-    private val handler = Handler()
+    final override var currentStageIndex: Int = -1
+        private set
 
     override val stageCount: Int
         get() = stages.size
 
-    override val currentStage: Int
-        get() = currentStageIndex
+    override var state: State = State.CREATED
+        protected set
+
+    private val stages = mutableListOf<Stage>()
+
+    private val handler = Handler()
 
     override fun start() {
-        require(currentStageIndex < 0)
+        require(state == State.CREATED || state == State.PAUSED) { state }
+        state = State.STARTED
 
         handler.post(::runNext)
     }
@@ -55,6 +74,7 @@ internal class WizardImpl : Wizard() {
         val nextIndex = currentStageIndex + 1
 
         if(nextIndex == stages.size) {
+            state = State.DONE
             onDoneCallback()
             return
         }
@@ -72,19 +92,49 @@ internal class WizardImpl : Wizard() {
         }
     }
 
-    internal fun onStageDone(stage: Stage) {
-        stage.tearDown()
-        handler.post(::runNext)
+    override fun onStageChanged(stage: Stage) {
+        onChange.postValue(stage)
     }
 
-    internal fun onStageFailed(stage: Stage) {
+    override fun onStageDone(stage: Stage) {
+        stage.tearDown()
+
+        if(state == State.STARTED)
+            handler.post(::runNext)
+    }
+
+    override fun onStageFailed(stage: Stage) {
         stage.tearDown()
         currentStageIndex = -1
-
     }
 
     internal operator fun plusAssign(stages: List<Stage>) {
         check(currentStageIndex < 0)
         this.stages += stages
+    }
+}
+
+internal class LifecycleWizard(lifecycleOwner: LifecycleOwner): WizardImpl(), LifecycleEventObserver {
+    init {
+        lifecycleOwner.lifecycle.addObserver(this)
+    }
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        when (event) {
+            Lifecycle.Event.ON_RESUME -> {
+                if(state == State.CREATED || state == State.PAUSED)
+                    start()
+            }
+            Lifecycle.Event.ON_PAUSE -> {
+                if(state != State.DONE) {
+                    state = State.PAUSED
+                    stop()
+                }
+            }
+            Lifecycle.Event.ON_DESTROY -> {
+                source.lifecycle.removeObserver(this)
+            }
+            else -> { }
+        }
     }
 }

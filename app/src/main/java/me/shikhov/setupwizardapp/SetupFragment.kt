@@ -1,19 +1,23 @@
 package me.shikhov.setupwizardapp
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import me.shikhov.setupwizard.extend
 import me.shikhov.setupwizard.wizard
+import me.shikhov.wlog.Log
 
+private const val TAG = "wizard-fragment"
 
 class SetupFragment : Fragment(R.layout.fragment_setup) {
 
     private lateinit var logView: TextView
 
-    private val wizard = wizard {
+    private val wizard = wizard(this) {
         stage() {
             setUp {
                 logView.append("stage 1, setup\n")
@@ -29,7 +33,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             setUp {
                 logView.append("stage 2, setup\n")
             }
-            procede {
+            proceed {
                 logView.append("stage 2, procede\n")
                 logView.postDelayed(1000L) {
                     logView.append("stage 2, delayed end\n")
@@ -53,7 +57,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 setUp {
                     logView.append("ex stage 1, setup\n")
                 }
-                procede {
+                proceed {
                     logView.append("ex stage 1, procede\n")
                     logView.postDelayed(1000L) {
                         logView.append("ex stage 1, delayed end\n")
@@ -73,6 +77,10 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 logView.append("II done!\n")
             }
         }
+
+        wizard.onChange.observe(this, Observer  { stage ->
+            android.util.Log.i("wizard", "wizardState: ${wizard.state} index = ${wizard.currentStageIndex}: id = ${stage.id} state: ${stage.state}")
+        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,7 +96,28 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             wizard.stop()
         }
 
-        logView.append("wizard: ${wizard.currentStage}/${wizard.stageCount}")
+        logView.append("wizard: ${wizard.currentStageIndex}/${wizard.stageCount}")
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        Log.get(TAG).a("onAttach").r()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.get(TAG).a("onResume").r()
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.get(TAG).a("onPause").r()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.get(TAG).a("onDestroy").r()
     }
 }
 

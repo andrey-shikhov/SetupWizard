@@ -2,23 +2,48 @@ package me.shikhov.setupwizard
 
 
 class Stage(val id: String,
+            private val wizard: Wizard,
             private val setup: () -> Unit,
             private val run: Stage.() -> Unit,
-            private val teardown: () -> Unit,
-            private val onFailure: (Stage) -> Unit,
-            private val onDone: (Stage) -> Unit) {
+            private val teardown: () -> Unit) {
 
-    internal fun setUp() = setup()
-
-    internal fun tearDown() = teardown()
-
-    internal fun start() = run()
-
-    fun cancel() {
-        onFailure(this)
+    enum class State {
+        CREATED,
+        PREPARED,
+        STARTED,
+        CANCELED,
+        DONE
     }
+
+    var state: State = State.CREATED
+        private set(value) {
+            field = value
+            wizard.onStageChanged(this)
+        }
 
     fun done() {
-        onDone(this)
+        if(state == State.STARTED) {
+            state = State.DONE
+            wizard.onStageDone(this)
+        }
     }
+
+    fun cancel() {
+        if(state == State.STARTED) {
+            state = State.CANCELED
+            wizard.onStageFailed(this)
+        }
+    }
+
+    internal fun setUp() {
+        setup()
+        state = State.PREPARED
+    }
+
+    internal fun start() {
+        state = State.STARTED
+        run()
+    }
+
+    internal fun tearDown() = teardown()
 }
