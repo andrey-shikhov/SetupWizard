@@ -18,12 +18,15 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     private lateinit var logView: TextView
 
     private val wizard = wizard(this) {
-        stage() {
+
+        stage("named") {
+
             setUp {
                 logView.append("stage 1, setup\n")
             }
             simple {
                 logView.append("stage 1, simple action\n")
+
             }
             tearDown {
                 logView.append("stage 1, teardown\n")
@@ -101,23 +104,23 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        Log.get(TAG).a("onAttach").r()
+        Log[TAG].a("onAttach").r()
     }
 
     override fun onResume() {
         super.onResume()
-        Log.get(TAG).a("onResume").r()
+        Log[TAG].a("onResume").r()
 
     }
 
     override fun onPause() {
         super.onPause()
-        Log.get(TAG).a("onPause").r()
+        Log[TAG].a("onPause").r()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.get(TAG).a("onDestroy").r()
+        Log[TAG].a("onDestroy").r()
     }
 }
 

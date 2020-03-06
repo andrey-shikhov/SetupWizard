@@ -1,8 +1,8 @@
 package me.shikhov.setupwizard
 
-class StageBuilder internal constructor(private val wizard: WizardImpl) {
 
-    var id: String = ""
+@WizardMarker
+class StageBuilder internal constructor(private val stageId: String) {
 
     private var setup: () -> Unit = { }
 
@@ -29,9 +29,9 @@ class StageBuilder internal constructor(private val wizard: WizardImpl) {
         teardown = action
     }
 
-    fun build(): Stage {
+    internal fun build(wizard: WizardImpl): Stage {
         return Stage(
-            id,
+            stageId,
             wizard,
             setup,
             run,

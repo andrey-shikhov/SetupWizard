@@ -1,5 +1,9 @@
 package me.shikhov.setupwizard
 
+@DslMarker
+annotation class WizardMarker
+
+@WizardMarker
 class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
     private var onDoneCallback: (() -> Unit)? = null
@@ -9,10 +13,8 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
     private val stages = mutableListOf<Stage>()
 
     fun stage(id: String = "", init: StageBuilder.() -> Unit) {
-        val sb = StageBuilder(wizard)
-        sb.id = id
-        init(sb)
-        stages += sb.build()
+        val sb = StageBuilder(id).apply(init)
+        stages += sb.build(wizard)
     }
 
     fun wizardDone(onDone: () -> Unit) {

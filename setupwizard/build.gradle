@@ -17,7 +17,7 @@ ext {
     siteUrl = 'https://github.com/andrey-shikhov/SetupWizard'
     gitUrl = 'https://github.com/andrey-shikhov/SetupWizard.git'
 
-    libraryVersion = '0.6.0'
+    libraryVersion = '0.7.0'
 
     developerId = 'andrey-shikhov'
     developerName = 'Andrew Shikhov'
@@ -29,14 +29,14 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
-        versionName "0.5.0"
+        versionName "0.7.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -53,7 +53,7 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.2.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
