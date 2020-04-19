@@ -14,7 +14,11 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
     fun stage(id: String = "", init: StageBuilder.() -> Unit) {
         val sb = StageBuilder(id).apply(init)
-        stages += sb.build(wizard)
+        stages += sb.build(wizard::onStageStateChanged)
+    }
+
+    fun parallel(id: String = "", init: ParallelStageBuilder.() -> Unit) {
+        stages += ParallelStageBuilder(wizard, id).apply(init).build()
     }
 
     fun wizardDone(onDone: () -> Unit) {
@@ -30,6 +34,10 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
         onDoneCallback?.let {
             wizard.onDoneCallback = it
+        }
+
+        onFailureCallback?.let {
+            wizard.onFailureCallback = it
         }
 
         return wizard

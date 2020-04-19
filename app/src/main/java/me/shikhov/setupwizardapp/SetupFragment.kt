@@ -20,7 +20,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     private val wizard = wizard(this) {
 
         stage("named") {
-
             setUp {
                 logView.append("stage 1, setup\n")
             }
@@ -82,7 +81,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         }
 
         wizard.onChange.observe(this, Observer  { stage ->
-            android.util.Log.i("wizard", "wizardState: ${wizard.state} index = ${wizard.currentStageIndex}: id = ${stage.id} state: ${stage.state}")
+            android.util.Log.i("wizard", "wizardState: ${wizard.state} index = ${wizard.currentStageIndex}: $stage")
         })
     }
 

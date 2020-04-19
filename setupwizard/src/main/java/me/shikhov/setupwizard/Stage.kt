@@ -2,48 +2,61 @@ package me.shikhov.setupwizard
 
 
 class Stage(val id: String,
-            private val wizard: Wizard,
+            private val observer: (Stage, State) -> Unit,
             private val setup: () -> Unit,
             private val run: Stage.() -> Unit,
-            private val teardown: () -> Unit) {
-
-    enum class State {
-        CREATED,
-        PREPARED,
-        STARTED,
-        CANCELED,
-        DONE
-    }
-
-    var state: State = State.CREATED
-        private set(value) {
-            field = value
-            wizard.onStageChanged(this)
-        }
+            private val teardown: () -> Unit,
+            private val onError:(Stage, Throwable) -> Unit) {
 
     fun done() {
-        if(state == State.STARTED) {
-            state = State.DONE
-            wizard.onStageDone(this)
-        }
+        check(state == State.STARTED)
+        state = State.DONE
     }
 
     fun cancel() {
-        if(state == State.STARTED) {
-            state = State.CANCELED
-            wizard.onStageFailed(this)
-        }
+        check(state == State.STARTED)
+        state = State.CANCELED
     }
 
-    internal fun setUp() {
-        setup()
-        state = State.PREPARED
+    fun error(throwable: Throwable) {
+        check(state == State.STARTED)
+        state = State.FAILED
+        onError(this, throwable)
     }
+
+    /**
+     * CREATED -> STARTED
+     * STARTED -> DONE | CANCELED | FAILED
+     *
+     */
+    enum class State {
+        CREATED,
+        STARTED,
+        CANCELED,
+        FAILED,
+        DONE;
+
+        val isFinished get() = ordinal > STARTED.ordinal
+    }
+
+    private var state: State = State.CREATED
+        set(value) {
+            field = value
+            observer(this, field)
+        }
 
     internal fun start() {
         state = State.STARTED
-        run()
+        setup()
+
+        runCatching(run).fold({
+            // task actually can be running in background, so this callback is unused.
+        }, ::error)
     }
 
     internal fun tearDown() = teardown()
+
+    override fun toString(): String {
+        return "Stage#$id($state)"
+    }
 }

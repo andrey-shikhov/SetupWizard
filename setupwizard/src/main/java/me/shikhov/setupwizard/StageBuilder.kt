@@ -6,9 +6,11 @@ class StageBuilder internal constructor(private val stageId: String) {
 
     private var setup: () -> Unit = { }
 
+    private var teardown: () -> Unit = { }
+
     private var run: Stage.() -> Unit = { done() }
 
-    private var teardown: () -> Unit = { }
+    private var onError: (Stage, Throwable) -> Unit = { _, _ -> }
 
     fun setUp(action: () -> Unit) {
         setup = action
@@ -29,12 +31,12 @@ class StageBuilder internal constructor(private val stageId: String) {
         teardown = action
     }
 
-    internal fun build(wizard: WizardImpl): Stage {
-        return Stage(
-            stageId,
-            wizard,
-            setup,
-            run,
-            teardown)
+    internal fun build(onStageStateChanged: (Stage, Stage.State) -> Unit): Stage {
+        return Stage(stageId,
+                     onStageStateChanged,
+                     setup,
+                     run,
+                     teardown,
+                     onError)
     }
 }

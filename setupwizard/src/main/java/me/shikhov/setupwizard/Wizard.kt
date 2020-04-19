@@ -35,11 +35,7 @@ sealed class Wizard {
 
     abstract fun stop()
 
-    internal abstract fun onStageChanged(stage: Stage)
-
-    internal abstract fun onStageFailed(stage: Stage)
-
-    internal abstract fun onStageDone(stage: Stage)
+    internal abstract fun onStageStateChanged(stage: Stage, state: Stage.State)
 }
 
 internal open class WizardImpl : Wizard() {
@@ -81,7 +77,6 @@ internal open class WizardImpl : Wizard() {
 
         currentStageIndex = nextIndex
         val stage = stages[nextIndex]
-        stage.setUp()
         stage.start()
     }
 
@@ -92,18 +87,25 @@ internal open class WizardImpl : Wizard() {
         }
     }
 
-    override fun onStageChanged(stage: Stage) {
+    override fun onStageStateChanged(stage: Stage, state: Stage.State) {
+        when(state) {
+            Stage.State.CREATED -> TODO()
+            Stage.State.STARTED -> TODO()
+            Stage.State.CANCELED -> TODO()
+            Stage.State.DONE -> onStageDone(stage)
+        }
+
         onChange.postValue(stage)
     }
 
-    override fun onStageDone(stage: Stage) {
+    private fun onStageDone(stage: Stage) {
         stage.tearDown()
 
         if(state == State.STARTED)
             handler.post(::runNext)
     }
 
-    override fun onStageFailed(stage: Stage) {
+    fun onStageFailed(stage: Stage) {
         stage.tearDown()
         currentStageIndex = -1
     }
