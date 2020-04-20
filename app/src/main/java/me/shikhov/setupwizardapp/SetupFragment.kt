@@ -7,6 +7,7 @@ import android.widget.TextView
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import me.shikhov.setupwizard.Wizard
 import me.shikhov.setupwizard.extend
 import me.shikhov.setupwizard.wizard
 import me.shikhov.wlog.Log
@@ -17,8 +18,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
     private lateinit var logView: TextView
 
-    private val wizard = wizard(this) {
-
+    private val wizard = wizard(this, Wizard.UsageType.DISPOSABLE) {
         stage("named") {
             setUp {
                 logView.append("stage 1, setup\n")
@@ -48,8 +48,22 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             }
         }
 
+        stage {
+            proceed {
+                if(System.currentTimeMillis() % 2 == 0L) done() else cancel()
+            }
+        }
+
         wizardDone {
             logView.append("I done!\n")
+        }
+
+        wizardDispose {
+            logView.append("Me disposed\n")
+        }
+
+        wizardFailure {
+            logView.append("Me failed\n")
         }
     }
 

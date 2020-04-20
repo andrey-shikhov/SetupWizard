@@ -10,6 +10,8 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
     private var onFailureCallback: (() -> Unit)? = null
 
+    private var onDisposeCallback: (() -> Unit)? = null
+
     private val stages = mutableListOf<Stage>()
 
     fun stage(id: String = "", init: StageBuilder.() -> Unit) {
@@ -29,6 +31,10 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
         onFailureCallback = onFailure
     }
 
+    fun wizardDispose(onDispose: () -> Unit) {
+        onDisposeCallback = onDispose
+    }
+
     internal fun build(): Wizard {
         wizard += stages
 
@@ -38,6 +44,10 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
         onFailureCallback?.let {
             wizard.onFailureCallback = it
+        }
+
+        onDisposeCallback?.let {
+            wizard.onDisposeCallback = it
         }
 
         return wizard
