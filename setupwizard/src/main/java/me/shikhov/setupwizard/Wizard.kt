@@ -50,14 +50,18 @@ sealed class Wizard(val usageType: UsageType) {
         REUSABLE
     }
 
-    enum class State {
-        CREATED,
-        RUNNING,
-        PAUSED,
-        DONE,
-        CANCELED,
-        FAILED,
-        DISPOSED
+    enum class State(
+        /**
+         * Indicates that Wizard can be launched by [Wizard.start] from this state.
+         */
+        internal val isLaunchable: Boolean) {
+        CREATED(true),
+        RUNNING(false),
+        PAUSED(true),
+        DONE(false),
+        CANCELED(true),
+        FAILED(true),
+        DISPOSED(false)
     }
 
     abstract val state: State
@@ -132,7 +136,7 @@ internal open class WizardImpl(usageType: UsageType) : Wizard(usageType) {
     private val handler = Handler()
 
     override fun start() {
-        require(state == State.CREATED || state == State.PAUSED) { state }
+        require(state.isLaunchable) { state }
         state = State.RUNNING
 
         handler.post(::runNext)
@@ -195,17 +199,14 @@ internal open class WizardImpl(usageType: UsageType) : Wizard(usageType) {
         state = State.FAILED
     }
 
-    internal operator fun plusAssign(stages: List<Stage>) {
-        require(state == State.CREATED)
+    internal open operator fun plusAssign(stages: List<Stage>) {
+        require(state == State.CREATED) { state }
         check(currentStageIndex < 0)
         this.stages += stages
     }
 }
 
-internal class LifecycleWizard(lifecycleOwner: LifecycleOwner, usageType: UsageType): WizardImpl(usageType), LifecycleEventObserver {
-    init {
-        lifecycleOwner.lifecycle.addObserver(this)
-    }
+internal class LifecycleWizard(private val lifecycleOwner: LifecycleOwner, usageType: UsageType): WizardImpl(usageType), LifecycleEventObserver {
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
@@ -225,6 +226,16 @@ internal class LifecycleWizard(lifecycleOwner: LifecycleOwner, usageType: UsageT
                 source.lifecycle.removeObserver(this)
             }
             else -> { }
+        }
+    }
+
+    override fun plusAssign(stages: List<Stage>) {
+        val isInit = stageCount == 0
+
+        super.plusAssign(stages)
+
+        if(isInit) {
+            lifecycleOwner.lifecycle.addObserver(this)
         }
     }
 }
