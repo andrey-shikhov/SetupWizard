@@ -28,7 +28,7 @@ fun wizard(lifecycleOwner: LifecycleOwner? = null,
     } ?: WizardImpl(usageType)
 
     return WizardBuilder(wizard).apply(init).build().also {
-        if(autoStart && usageType == Wizard.UsageType.DISPOSABLE) it.start()
+        if(lifecycleOwner == null && autoStart && usageType == Wizard.UsageType.DISPOSABLE) it.start()
     }
 }
 
