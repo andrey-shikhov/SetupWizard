@@ -29,18 +29,20 @@ Required dependencies:
                 setUp {
                     // called before main action in proceed block
                 }
-            proceed {
-                // here must be scheduled call of done() or cancel()
-                // scheduled - means it can be called later after operation completes                 
-                if(true) 
-                    done()                                                
+                
+                proceed {
+                    // here must be scheduled call of done() or cancel()
+                    // scheduled - means it can be called later after operation completes                 
+                    if(true) 
+                        done()                                                
+                }
+                
+                tearDown {
+                    // called after 'proceed' part ended(done or canceled, no matter) 
+                    // Note: Will not called if setUp fails
+                }
             }
-            tearDown {
-                // called after 'proceed' part ended(done or canceled, no matter) 
-                // Note: Will not called if setUp fails
-            }
-        }
-    }
+        }        
 
 2) Adding stages to created wizard(it must not be running at the moment)
 
