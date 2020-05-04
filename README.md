@@ -57,36 +57,39 @@ Required dependencies:
 3) Running wizard automatically with lifecycle of Activity or Fragment.
 
 
-    class SomeFragment: Fragment {
-       
-       // This wizard will start automatically when fragment resumes.
-       // Also this wizard will be auto canceled if fragment will be destroyed before wizard finishes 
-       // all the stages.
-       // You can use viewLifecycleOwner property instead of this if wizard binded to view
-       val wizard = wizard(this) {
+        class SomeFragment: Fragment {
+            
+           // This wizard will start automatically when fragment resumes.
+           // Also this wizard will be auto canceled if fragment will be destroyed before wizard finishes 
+           // all the stages.
+           // You can use viewLifecycleOwner property instead of this if wizard binded to view
+           val wizard = wizard(this) {
                 stage {
                     ...                
                 }
-       }         
-    }
+           }         
+        }
     
-4) Do something when all stages comleted:
+4) Do something when all stages completed:
 
 
-    wizard {
-        stage {
-            ...
-        }
-        wizardDone {
-            // called when all the stages are completed successfully.
-        }
-        wizardFailure {
-            // called when one of the stages fails or is canceled
-        }
-        wizardDispose {
-            // called after wizardDone or wizardFailure
-        }
-    }        
+        wizard {
+            stage {
+                ...
+            }
+            
+            wizardDone {
+                // called when all the stages are completed successfully.
+            }
+            
+            wizardFailure {
+                // called when one of the stages fails or is canceled
+            }
+            
+            wizardDispose {
+                // called after wizardDone or wizardFailure
+            }
+        }        
 
 # ChangeLog
 - 0.9.0 autoStart for disposable wizards, delayed subscription on Lifecycle events in the LifecycleWizard to avoid wizard launch before builder end  
