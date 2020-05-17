@@ -15,15 +15,19 @@ Required dependencies:
 - kotlin stdlib
 - androidX lifecycle, liveData
 
+# Basics
+Wizard is basically a state machine which allows executing client specific code sequentially,
+with handy dsl which allows subscription on the execution result.
+ 
+![Wizard states graph](/diagrams/wizard_states.png?raw=true "Wizard states graph")
+
 # Usage
 1) Simple disposable wizard(created for one time usage) with autostart
 
 
         wizard {
-            stage {
-                simple {
-                    // simple action
-                }
+            step {                
+                // simple action                
             }
             stage("namedStage") {
                 setUp {
@@ -76,7 +80,7 @@ Required dependencies:
         wizard {
             stage {
                 ...
-            }
+            }            
             
             wizardDone {
                 // called when all the stages are completed successfully.
@@ -86,12 +90,17 @@ Required dependencies:
                 // called when one of the stages fails or is canceled
             }
             
-            wizardDispose {
+            wizardStop {
                 // called after wizardDone or wizardFailure
+            }
+            
+            wizardDispose {
+                // called when lifecycle owner is destroyed or if manually called dispose() method of wizard 
             }
         }        
 
 # ChangeLog
+- 0.10.0 added RestartPolicy, simplified root builder functions, wizardStop event, wizard events now can have multiple listeners, simple stage to be replaced with step block 
 - 0.9.0 autoStart for disposable wizards, delayed subscription on Lifecycle events in the LifecycleWizard to avoid wizard launch before builder end  
 - 0.8.0 wizardFailure, wizardDispose callbacks, disposable & reusable wizards, experimental parallel stage builder
 - 0.7.0 added @DslMarker to restrict builders methods availability, updated dependencies

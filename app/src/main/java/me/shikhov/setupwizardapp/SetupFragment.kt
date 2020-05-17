@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import me.shikhov.setupwizard.Wizard
 import me.shikhov.setupwizard.extend
@@ -18,54 +19,63 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
 
     private lateinit var logView: TextView
 
-    private val wizard = wizard(this, Wizard.UsageType.DISPOSABLE) {
-        stage("named") {
-            setUp {
-                logView.append("stage 1, setup\n")
+    private val wizard = wizard(this,
+                                restartPolicy = Wizard.RestartPolicy.CONTINUE) {
+            step {
+                logView.append("step stage proceed\n")
             }
-            simple {
-                logView.append("stage 1, simple action\n")
-
-            }
-            tearDown {
-                logView.append("stage 1, teardown\n")
-            }
-        }
-        stage {
-            setUp {
-                logView.append("stage 2, setup\n")
-            }
-            proceed {
-                logView.append("stage 2, procede\n")
-                logView.postDelayed(1000L) {
-                    logView.append("stage 2, delayed end\n")
+            stage("named") {
+                setUp {
+                    logView.append("stage 2, setup\n")
+                }
+                proceed {
+                    logView.append("stage 2, simple action\n")
                     done()
                 }
-                logView.append("stage 2, procede setup end\n")
+                tearDown {
+                    logView.append("stage 2, teardown\n")
+                }
             }
-            tearDown {
-                logView.append("stage 2, teardown\n")
+            stage {
+                setUp {
+                    logView.append("stage 3, setup\n")
+                }
+                proceed {
+                    logView.append("stage 3, procede\n")
+                    logView.postDelayed(1000L) {
+                        logView.append("stage 3, delayed end\n")
+                        done()
+                    }
+                    logView.append("stage 3, procede setup end\n")
+                }
+                tearDown {
+                    logView.append("stage 3, teardown\n")
+                }
+            }
+
+            stage {
+                proceed {
+                    logView.append("stage 4, proceed\n")
+                    if(System.currentTimeMillis() % 2 == 0L) done() else cancel()
+                }
+            }
+
+            wizardDone {
+                logView.append("Wizard done!\n")
+            }
+
+            wizardDispose {
+                Log[TAG].a("** wizard dispose! **").r()
+            }
+
+            wizardFailure {
+                logView.append("Wizard failed\n")
+            }
+
+            wizardStop {
+                logView.append("Wizard stop I\n")
             }
         }
-
-        stage {
-            proceed {
-                if(System.currentTimeMillis() % 2 == 0L) done() else cancel()
-            }
-        }
-
-        wizardDone {
-            logView.append("I done!\n")
-        }
-
-        wizardDispose {
-            logView.append("Me disposed\n")
-        }
-
-        wizardFailure {
-            logView.append("Me failed\n")
-        }
-    }
 
     init {
         wizard extend {
@@ -90,12 +100,16 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             }
 
             wizardDone {
-                logView.append("II done!\n")
+                logView.append("Wizard done II\n")
+            }
+            wizardStop {
+                logView.append("Wizard stop II\n")
+                logView.append("--------------\n")
             }
         }
 
         wizard.onChange.observe(this, Observer  { stage ->
-            android.util.Log.i("wizard", "wizardState: ${wizard.state} index = ${wizard.currentStageIndex}: $stage")
+            android.util.Log.i("wizard", "#${wizard.currentStageIndex}: $stage")
         })
     }
 
@@ -105,14 +119,23 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
         logView = view.findViewById(R.id.setup_log)
 
         view.findViewById<View>(R.id.setup_launch).setOnClickListener {
+            logView.append("* start: $wizard\n")
             wizard.start()
         }
 
         view.findViewById<View>(R.id.setup_cancel).setOnClickListener {
+            logView.append("* stop: $wizard\n")
             wizard.stop()
         }
 
-        logView.append("wizard: ${wizard.currentStageIndex}/${wizard.stageCount}")
+        view.findViewById<View>(R.id.setup_destroy).setOnClickListener {
+            logView.append("* destroy: $wizard\n")
+            parentFragmentManager.commit {
+                remove(this@SetupFragment)
+            }
+        }
+
+        logView.append("$wizard\n")
     }
 
     override fun onAttach(context: Context) {
@@ -123,7 +146,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     override fun onResume() {
         super.onResume()
         Log[TAG].a("onResume").r()
-
     }
 
     override fun onPause() {

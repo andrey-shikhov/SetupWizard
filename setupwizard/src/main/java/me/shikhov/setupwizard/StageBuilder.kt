@@ -20,6 +20,7 @@ class StageBuilder internal constructor(private val stageId: String) {
         run = action
     }
 
+    @Deprecated(message = "use [WizardBuilder.step] instead")
     fun simple(action: () -> Unit) {
         run = {
             action()

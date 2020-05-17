@@ -3,13 +3,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    
-    <TextView
-        android:id="@+id/setup_log"
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        />
+        android:layout_weight="1">
+        <TextView
+            android:id="@+id/setup_log"
+            android:textColor="#ccc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </ScrollView>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,6 +31,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/setup_cancel"
+            />
+
+        <Button
+            android:text="DESTROY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/setup_destroy"
             />
     </LinearLayout>
 </LinearLayout>

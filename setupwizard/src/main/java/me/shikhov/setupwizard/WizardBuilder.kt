@@ -10,13 +10,21 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
     private var onFailureCallback: (() -> Unit)? = null
 
+    private var onStopCallback: (() -> Unit)? = null
+
     private var onDisposeCallback: (() -> Unit)? = null
 
     private val stages = mutableListOf<Stage>()
 
+    fun step(id: String = "", block: () -> Unit) {
+        stages += Stage(id, wizard::onStageStateChanged, { }, {
+            block()
+            done()
+        }, { }, {_,_ ->})
+    }
+
     fun stage(id: String = "", init: StageBuilder.() -> Unit) {
-        val sb = StageBuilder(id).apply(init)
-        stages += sb.build(wizard::onStageStateChanged)
+        stages += StageBuilder(id).apply(init).build(wizard::onStageStateChanged)
     }
 
     fun parallel(id: String = "", init: ParallelStageBuilder.() -> Unit) {
@@ -31,6 +39,10 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
         onFailureCallback = onFailure
     }
 
+    fun wizardStop(onStop: () -> Unit) {
+        onStopCallback = onStop
+    }
+
     fun wizardDispose(onDispose: () -> Unit) {
         onDisposeCallback = onDispose
     }
@@ -39,15 +51,19 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
         wizard += stages
 
         onDoneCallback?.let {
-            wizard.onDoneCallback = it
+            wizard.onDone += it
         }
 
         onFailureCallback?.let {
-            wizard.onFailureCallback = it
+            wizard.onFailure += it
         }
 
         onDisposeCallback?.let {
-            wizard.onDisposeCallback = it
+            wizard.onDispose += it
+        }
+
+        onStopCallback?.let {
+            wizard.onStop += it
         }
 
         return wizard

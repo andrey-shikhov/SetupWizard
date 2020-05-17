@@ -17,7 +17,7 @@ ext {
     siteUrl = 'https://github.com/andrey-shikhov/SetupWizard'
     gitUrl = 'https://github.com/andrey-shikhov/SetupWizard.git'
 
-    libraryVersion = '0.9.0'
+    libraryVersion = '0.10.0'
 
     developerId = 'andrey-shikhov'
     developerName = 'Andrew Shikhov'

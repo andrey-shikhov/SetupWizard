@@ -9,44 +9,43 @@ class Stage(val id: String,
             private val onError:(Stage, Throwable) -> Unit) {
 
     fun done() {
-        check(state == State.STARTED)
+        check(state == State.RUNNING)
         state = State.DONE
     }
 
     fun cancel() {
-        check(state == State.STARTED)
+        check(state == State.RUNNING)
         state = State.CANCELED
     }
 
     fun error(throwable: Throwable) {
-        check(state == State.STARTED)
+        check(state == State.RUNNING)
         state = State.FAILED
         onError(this, throwable)
     }
 
     /**
-     * CREATED -> STARTED
-     * STARTED -> DONE | CANCELED | FAILED
-     *
+     * CREATED -> RUNNING
+     * RUNNING -> DONE | CANCELED | FAILED
      */
     enum class State {
         CREATED,
-        STARTED,
+        RUNNING,
         CANCELED,
         FAILED,
         DONE;
 
-        val isFinished get() = ordinal > STARTED.ordinal
+        internal val isFinished get() = ordinal > RUNNING.ordinal
     }
 
-    private var state: State = State.CREATED
-        set(value) {
+    var state: State = State.CREATED
+        private set(value) {
             field = value
             observer(this, field)
         }
 
     internal fun start() {
-        state = State.STARTED
+        state = State.RUNNING
         setup()
 
         runCatching(run).fold({
