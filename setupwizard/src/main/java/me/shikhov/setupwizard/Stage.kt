@@ -1,20 +1,35 @@
 package me.shikhov.setupwizard
 
+import androidx.annotation.IntRange
+
 
 class Stage(val id: String,
+            val readableName: String,
             private val observer: (Stage, State) -> Unit,
             private val setup: () -> Unit,
             private val run: Stage.() -> Unit,
             private val teardown: () -> Unit,
-            private val onError:(Stage, Throwable) -> Unit) {
+            private val onError:(Stage, Throwable) -> Unit,
+            private val onProgressChanged: (Stage, progress: Int) -> Unit) {
+
+    var progressLevel: Int = 0
+        private set(value) {
+            if(field != value) {
+                check(value in 0..10000) { value }
+                field = value
+                onProgressChanged(this, field)
+            }
+        }
+
 
     fun done() {
-        check(state == State.RUNNING)
+        check(state == State.RUNNING) { this }
+        reportProgress(10000)
         state = State.DONE
     }
 
     fun cancel() {
-        check(state == State.RUNNING)
+        check(state == State.RUNNING) { this }
         state = State.CANCELED
     }
 
@@ -22,6 +37,11 @@ class Stage(val id: String,
         check(state == State.RUNNING)
         state = State.FAILED
         onError(this, throwable)
+    }
+
+    fun reportProgress(@IntRange(from = 0, to = 10_000) level: Int) {
+        check(state == State.RUNNING) { this }
+        progressLevel = level
     }
 
     /**
@@ -46,6 +66,8 @@ class Stage(val id: String,
 
     internal fun start() {
         state = State.RUNNING
+        reportProgress(0)
+
         setup()
 
         runCatching(run).fold({

@@ -16,19 +16,62 @@ class WizardBuilder internal constructor(private val wizard: WizardImpl) {
 
     private val stages = mutableListOf<Stage>()
 
-    fun step(id: String = "", block: () -> Unit) {
-        stages += Stage(id, wizard::onStageStateChanged, { }, {
-            block()
-            done()
-        }, { }, {_,_ ->})
+    /**
+     * Variable to use for creating automatic ids for stages
+     */
+    private var stageIndex = 1
+
+    private fun createId(baseId: String): String {
+        var id = if(baseId.isEmpty()) stageIndex.toString() else baseId
+        val startIndex = stageIndex
+
+        while(stages.any { it.id == id }) {
+            stageIndex++
+            id = if(baseId.isEmpty()) {
+                stageIndex.toString()
+            } else {
+                // same id processing, same_id -> same_id2 -> same_id3 -> same_id4
+                "$baseId${stageIndex - startIndex + 1}"
+            }
+        }
+
+        stageIndex++
+        return id
     }
 
-    fun stage(id: String = "", init: StageBuilder.() -> Unit) {
-        stages += StageBuilder(id).apply(init).build(wizard::onStageStateChanged)
+    fun step(id: String = "",
+             readableName: String = "",
+             block: () -> Unit) {
+        stages += Stage(createId(id),
+                        readableName,
+                        wizard::onStageStateChanged,
+                        setup = { },
+                        run = {
+                            block()
+                            done()
+                        },
+                        teardown = { },
+                        onError = {_,_ ->},
+                        onProgressChanged = wizard::onStageProgressChanged)
     }
 
-    fun parallel(id: String = "", init: ParallelStageBuilder.() -> Unit) {
-        stages += ParallelStageBuilder(wizard, id).apply(init).build()
+    fun stage(id: String = "",
+              readableName: String = "",
+              init: StageBuilder.() -> Unit) {
+        stages += StageBuilder(createId(id),
+                               readableName,
+                               wizard::onStageProgressChanged)
+                                .apply(init)
+                                .build(wizard::onStageStateChanged)
+    }
+
+    fun parallel(id: String = "",
+                 readableName: String = "",
+                 init: ParallelStageBuilder.() -> Unit) {
+        stages += ParallelStageBuilder(wizard,
+                                       createId(id),
+                                       readableName)
+                                        .apply(init).build()
     }
 
     fun wizardDone(onDone: () -> Unit) {

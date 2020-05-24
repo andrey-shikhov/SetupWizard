@@ -1,5 +1,6 @@
 package me.shikhov.setupwizard
 
+import androidx.annotation.IntRange
 import androidx.lifecycle.*
 
 @Deprecated("lifecycle aware builder function is separated, WARNING! replacement dropped lifecycleOwner!",
@@ -109,11 +110,13 @@ abstract class Wizard internal constructor(internal val usageType: UsageType,
 
     abstract val state: State
 
-    abstract val stageCount: Int
-
     abstract val currentStageIndex: Int
 
+    abstract val stageCount: Int
+
     abstract val onChange: LiveData<Stage>
+
+    abstract val onProgressChanged: LiveData<Int>
 
     abstract fun start()
 
@@ -122,6 +125,8 @@ abstract class Wizard internal constructor(internal val usageType: UsageType,
     abstract fun dispose()
 
     internal abstract fun onStageStateChanged(stage: Stage, state: Stage.State)
+
+    internal abstract fun onStageProgressChanged(stage: Stage, @IntRange(from = 0, to = 10_000) progress: Int)
 
     override fun toString(): String {
         return "Wizard($state): stages: $stageCount cur=${if(currentStageIndex >= 0) currentStageIndex.toString() else ""}"

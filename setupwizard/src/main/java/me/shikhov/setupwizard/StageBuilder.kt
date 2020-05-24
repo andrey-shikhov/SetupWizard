@@ -2,7 +2,9 @@ package me.shikhov.setupwizard
 
 
 @WizardMarker
-class StageBuilder internal constructor(private val stageId: String) {
+class StageBuilder internal constructor(private val stageId: String,
+                                        private val stageReadableName: String,
+                                        private val stageProgressObserver: (Stage, Int) -> Unit) {
 
     private var setup: () -> Unit = { }
 
@@ -34,10 +36,12 @@ class StageBuilder internal constructor(private val stageId: String) {
 
     internal fun build(onStageStateChanged: (Stage, Stage.State) -> Unit): Stage {
         return Stage(stageId,
+                     stageReadableName,
                      onStageStateChanged,
                      setup,
                      run,
                      teardown,
-                     onError)
+                     onError,
+                     stageProgressObserver)
     }
 }

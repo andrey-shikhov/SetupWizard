@@ -119,6 +119,10 @@ internal open class WizardImpl(usageType: UsageType,
         onChange.postValue(stage)
     }
 
+    override fun onStageProgressChanged(stage: Stage, progress: Int) {
+
+    }
+
     private fun onStageDone(stage: Stage) {
         stage.tearDown()
 
