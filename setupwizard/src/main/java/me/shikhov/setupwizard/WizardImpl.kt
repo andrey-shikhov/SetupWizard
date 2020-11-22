@@ -9,6 +9,8 @@ internal open class WizardImpl(usageType: UsageType,
 
     override val onChange = MutableLiveData<Stage>()
 
+    override val onProgressChanged = MutableLiveData(0)
+
     val onDone = mutableListOf<() -> Unit>()
 
     val onFailure = mutableListOf<() -> Unit>()

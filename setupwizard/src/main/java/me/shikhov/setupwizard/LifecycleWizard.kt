@@ -1,8 +1,6 @@
 package me.shikhov.setupwizard
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.*
 
 internal class LifecycleWizard(private val lifecycleOwner: LifecycleOwner,
                                restartPolicy: RestartPolicy): WizardImpl(UsageType.REUSABLE, restartPolicy),
