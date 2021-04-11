@@ -1,14 +1,19 @@
-![Bintray](https://img.shields.io/bintray/v/andrey-shikhov/SetupWizard/me.shikhov.setupwizard?style=for-the-badge)
-
+# SetupWizard
+![Build with](https://img.shields.io/badge/kotlin-1.4.31-blue)  
 ![Android](https://img.shields.io/badge/minSdk-15-informational)
-# SetupWizard 
+
+![Bintray(deprecated)](https://img.shields.io/bintray/v/andrey-shikhov/SetupWizard/me.shikhov.setupwizard?style=for-the-badge)  
+![MavenCentral]()
 
 Library to ease multi step setup with rollbacks, written in kotlin 
 
 gradle dependency declaration:
 
     dependencies {
+          // old, deprecated, at jcenter
           implementation 'me.shikhov.setupwizard:setupwizard:0.9.0'
+          // new published one, at mavenCentral
+          implementation 'me.shikhov:setupwizard:1.0.0'            
     }
 
 Required dependencies: 
@@ -100,6 +105,7 @@ with handy dsl which allows subscription on the execution result.
         }        
 
 # ChangeLog
+- 1.0.0 rewritten publishing, changed destination from jcenter to mavenCentral
 - 0.10.0 added RestartPolicy, simplified root builder functions, wizardStop event, wizard events now can have multiple listeners, simple stage to be replaced with step block 
 - 0.9.0 autoStart for disposable wizards, delayed subscription on Lifecycle events in the LifecycleWizard to avoid wizard launch before builder end  
 - 0.8.0 wizardFailure, wizardDispose callbacks, disposable & reusable wizards, experimental parallel stage builder

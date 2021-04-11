@@ -3,21 +3,6 @@ package me.shikhov.setupwizard
 import androidx.annotation.IntRange
 import androidx.lifecycle.*
 
-@Deprecated("lifecycle aware builder function is separated, WARNING! replacement dropped lifecycleOwner!",
-    replaceWith = ReplaceWith("wizard(usageType = usageType, autoStart = autoStart, restartPolicy = Wizard.RestartPolicy.RESTART, init = init)", "me.shikhov.setupwizard.wizard"))
-fun wizard(lifecycleOwner: LifecycleOwner? = null,
-           usageType: Wizard.UsageType = Wizard.UsageType.DISPOSABLE,
-           autoStart: Boolean = usageType == Wizard.UsageType.DISPOSABLE,
-           init: WizardBuilder.() -> Unit): Wizard {
-
-     return lifecycleOwner?.let {
-         wizard(it, Wizard.RestartPolicy.RESTART, init)
-     } ?: run {
-         wizard(usageType, autoStart, Wizard.RestartPolicy.RESTART, init)
-     }
-}
-
-
 /**
  * Builds a wizard object and initialize it by using [init] block.
  * @param usageType specifies usage of wizard, can it run multiple times, or it is single pass flow
