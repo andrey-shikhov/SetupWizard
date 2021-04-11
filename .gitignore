@@ -12,3 +12,5 @@
 /captures
 .externalNativeBuild
 .cxx
+/setupwizard/gradle.properties
+/setupwizard/DCFE5C42.gpg

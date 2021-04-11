@@ -1,92 +1,153 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
+import java.net.URI
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     id("com.android.library")
     kotlin("android")
+    id("org.jetbrains.dokka")
     `maven-publish`
-    id("com.jfrog.bintray")
+    signing
 }
 
-val bintrayRepo = "SetupWizard"
-val bintrayName = "me.shikhov.setupwizard"
-
-val publishedGroupId = "me.shikhov.setupwizard"
-val libraryName = "setupwizard"
-val artifact = "setupwizard"
-
-val libraryDescription = "A multi step setup flow creator android library for kotlin android projects"
-
-val siteUrl = "https://github.com/andrey-shikhov/SetupWizard"
-val gitUrl = "https://github.com/andrey-shikhov/SetupWizard.git"
-
-val libraryVersion = "0.10.0"
-
-val developerId = "andrey-shikhov"
-val developerName = "Andrew Shikhov"
-val developerEmail = "andrew@shikhov.me"
-
-val licenseName = "The Apache Software License, Version 2.0"
-val licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-val allLicenses = arrayOf("Apache-2.0")
-
 android {
-    compileSdkVersion(29)
+    compileSdkVersion(30)
 
     defaultConfig {
         minSdkVersion(15)
-        targetSdkVersion(29)
-        versionCode(9)
-        versionName(libraryVersion)
-
-        testInstrumentationRunner("androidx.test.runner.AndroidJUnitRunner")
-        consumerProguardFiles("consumer-rules.pro")
+        targetSdkVersion(30)
+        versionCode(10)
+        versionName("1.0.0")
     }
 
     buildTypes {
         getByName("release") {
-            minifyEnabled(false)
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            consumerProguardFiles("consumer-rules.pro")
         }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 
 dependencies {
-    implementation(deps.kotlin.stdLib)
     implementation(deps.kotlin.coroutines)
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
 
-    testImplementation("junit:junit:4.13.1")
-    androidTestImplementation("androidx.test.ext:junit:1.1.2")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
 }
 
+tasks.dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            noAndroidSdkLink.set(false)
+        }
+    }
+}
+val secrets = Properties().apply {
+    load(FileInputStream(rootProject.file("local.properties")))
+}
 
-// Bintray
+val signingKeyId = secrets.getProperty("signingKeyId", "")
+val signingPassword = secrets.getProperty("signingPassword", "")
+val signingSecretKeyRingFile = secrets.getProperty("signingSecretKeyRingFile", "")
+val ossrhUsername = secrets.getProperty("ossrhUsername", "")
+val ossrhPassword = secrets.getProperty("ossrhPassword", "")
 
-val bintrayUser: String = gradleLocalProperties(rootDir).getProperty("bintray_user")
-val bintrayApikey: String = gradleLocalProperties(rootDir).getProperty("bintray_apikey")
-val bintrayGpgPassword: String = gradleLocalProperties(rootDir).getProperty("bintray_gpg_password")
+val androidSourcesJar by tasks.register<Jar>("androidSourcesJar") {
+    archiveClassifier.set("sources")
+    from(android.sourceSets.getByName("main").java.srcDirs)
+//    from(android.sourceSets.getByName("main").kotlin.srcDirs())
+}
 
-bintray {
-    user = bintrayUser
-    key = bintrayApikey
+val dokkaJavadocJar by tasks.register<Jar>("dokkaJavadocJar") {
+    dependsOn(tasks.dokkaJavadoc)
+    from(tasks.dokkaJavadoc.get().outputDirectory.get())
+    archiveClassifier.set("javadoc")
+}
 
-    pkg(delegateClosureOf<com.jfrog.bintray.gradle.BintrayExtension.PackageConfig> {
-        repo = bintrayRepo
-        name = bintrayName
-        desc = libraryDescription
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        setLicenses(*allLicenses)
-        setLabels("kotlin", "android")
-        publish = true
-        publicDownloadNumbers = true
-        desc = libraryDescription
-        version(delegateClosureOf<com.jfrog.bintray.gradle.BintrayExtension.VersionConfig>{
-            gpg(delegateClosureOf<com.jfrog.bintray.gradle.BintrayExtension.GpgConfig> {
-                sign = true //Determines whether to GPG sign the files. The default is false
-                passphrase = bintrayGpgPassword
-            })
-        })
-    })
+val dokkaHtmlJar by tasks.register<Jar>("dokkaHtmlJar") {
+    dependsOn(tasks.dokkaHtml)
+    from(tasks.dokkaHtml.get().outputDirectory.get())
+    archiveClassifier.set("html-doc")
+}
+
+artifacts {
+    archives(androidSourcesJar)
+    archives(dokkaJavadocJar)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "me.shikhov"
+                artifactId = "setupwizard"
+                version = "1.0.0"
+
+                artifact("$buildDir/outputs/aar/setupwizard-release.aar")
+                artifact(androidSourcesJar)
+                artifact(dokkaJavadocJar)
+
+                pom {
+                    name.set("setupwizard")
+                    description.set("A multi step setup flow creator android library for kotlin android projects")
+                    url.set("https://github.com/andrey-shikhov/SetupWizard")
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set("andrey-shikhov")
+                            name.set("Andrew Shikhov")
+                            email.set("andrew@shikhov.me")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git://github.com/andrey-shikhov/SetupWizard.git")
+                        developerConnection.set("scm:git:ssh://github.com/andrey-shikhov/SetupWizard.git")
+                        url.set("https://github.com/andrey-shikhov/SetupWizard")
+                    }
+                    withXml {
+                        val depNode = asNode().appendNode("dependencies")
+
+                        project.configurations.implementation.get().allDependencies.forEach {
+                            val dNode = depNode.appendNode("dependency")
+                            dNode.appendNode("groupId", it.group)
+                            dNode.appendNode("artifactId", it.name)
+                            dNode.appendNode("version", it.version)
+                        }
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "sonatype"
+                url = URI.create("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+
+                credentials {
+                    username = ossrhUsername
+                    password = ossrhPassword
+                }
+            }
+        }
+    }
+
+    signing {
+        sign(publishing.publications.getByName("release"))
+//        useInMemoryPgpKeys(signingKeyId, signingSecretKeyRingFile, signingPassword)
+    }
 }
