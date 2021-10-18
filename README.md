@@ -1,8 +1,5 @@
 # SetupWizard
-![Build with](https://img.shields.io/badge/kotlin-1.4.31-blue)  
-![Android](https://img.shields.io/badge/minSdk-15-informational)
-
-![MavenCentral](https://img.shields.io/maven-central/v/me.shikhov/setupwizard)
+![Build with](https://img.shields.io/badge/kotlin-1.5.30-blue) ![Android](https://img.shields.io/badge/minSdk-15-informational) ![MavenCentral](https://img.shields.io/maven-central/v/me.shikhov/setupwizard)
 
 Library to ease multi step setup with rollbacks, written in kotlin 
 
