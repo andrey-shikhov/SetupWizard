@@ -70,6 +70,11 @@ internal open class WizardImpl(usageType: UsageType,
     private val handler = Handler(Looper.getMainLooper())
 
     override fun start() {
+        if(state == State.CANCELED && restartPolicy == RestartPolicy.RESTART) {
+            currentStageIndex = -1
+            state = State.CREATED
+        }
+
         require(state.isLaunchable) { state }
         state = State.RUNNING
 
@@ -93,7 +98,12 @@ internal open class WizardImpl(usageType: UsageType,
         if(state == State.RUNNING) {
             if(currentStageIndex in stages.indices) {
                 val s = stages[currentStageIndex]
-                s.cancel() // will trigger onStateChanged with canceled state
+                if(s.state == Stage.State.RUNNING) {
+                    s.cancel() // will trigger onStateChanged with canceled state
+                }
+                else {
+                    state = State.CANCELED
+                }
             } else {
                 state = State.CANCELED
             }

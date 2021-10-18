@@ -20,7 +20,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     private lateinit var logView: TextView
 
     private val wizard = wizard(this,
-                                restartPolicy = Wizard.RestartPolicy.CONTINUE) {
+                                restartPolicy = Wizard.RestartPolicy.RESTART) {
             step {
                 logView.append("step stage proceed\n")
             }
@@ -42,7 +42,7 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 }
                 proceed {
                     logView.append("stage 3, procede\n")
-                    logView.postDelayed(1000L) {
+                    logView.postDelayed(5000L) {
                         logView.append("stage 3, delayed end\n")
                         done()
                     }
@@ -94,9 +94,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                 tearDown {
                     logView.append("ex stage 1, teardown\n")
                 }
-            }
-            stage {
-
             }
 
             wizardDone {

@@ -21,22 +21,24 @@ class Stage(val id: String,
             }
         }
 
-
     fun done() {
-        check(state == State.RUNNING) { this }
-        reportProgress(10000)
-        state = State.DONE
+        if(state == State.RUNNING) {
+            reportProgress(10000)
+            state = State.DONE
+        }
     }
 
     fun cancel() {
-        check(state == State.RUNNING) { this }
-        state = State.CANCELED
+        if(state == State.RUNNING) {
+            state = State.CANCELED
+        }
     }
 
     fun error(throwable: Throwable) {
-        check(state == State.RUNNING)
-        state = State.FAILED
-        onError(this, throwable)
+        if(state == State.RUNNING) {
+            state = State.FAILED
+            onError(this, throwable)
+        }
     }
 
     fun reportProgress(@IntRange(from = 0, to = 10_000) level: Int) {

@@ -1,7 +1,15 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
     }
 }
 
@@ -16,6 +24,4 @@ gradleEnterprise {
     }
 }
 
-
-rootProject.name="SW"
 include(":setupwizard", ":app")

@@ -38,7 +38,6 @@ fun wizard(lifecycleOwner: LifecycleOwner,
            init: WizardBuilder.() -> Unit): Wizard {
 
     val wizard = LifecycleWizard(lifecycleOwner, restartPolicy)
-
     return WizardBuilder(wizard).apply(init).build()
 }
 

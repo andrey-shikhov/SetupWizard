@@ -12,13 +12,11 @@ plugins {
 }
 
 android {
-    compileSdkVersion(30)
+    compileSdk = 30
 
     defaultConfig {
-        minSdkVersion(15)
-        targetSdkVersion(30)
-        versionCode(10)
-        versionName("1.0.0")
+        minSdk = 15
+        targetSdk = 30
     }
 
     buildTypes {
@@ -26,20 +24,13 @@ android {
             consumerProguardFiles("consumer-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
     implementation(deps.kotlin.coroutines)
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
 
-    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.4.20")
+    dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.5.30")
 }
 
 tasks.dokkaHtml.configure {
@@ -53,16 +44,12 @@ val secrets = Properties().apply {
     load(FileInputStream(rootProject.file("local.properties")))
 }
 
-val signingKeyId = secrets.getProperty("signingKeyId", "")
-val signingPassword = secrets.getProperty("signingPassword", "")
-val signingSecretKeyRingFile = secrets.getProperty("signingSecretKeyRingFile", "")
 val ossrhUsername = secrets.getProperty("ossrhUsername", "")
 val ossrhPassword = secrets.getProperty("ossrhPassword", "")
 
 val androidSourcesJar by tasks.register<Jar>("androidSourcesJar") {
     archiveClassifier.set("sources")
     from(android.sourceSets.getByName("main").java.srcDirs)
-//    from(android.sourceSets.getByName("main").kotlin.srcDirs())
 }
 
 val dokkaJavadocJar by tasks.register<Jar>("dokkaJavadocJar") {
@@ -88,7 +75,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 groupId = "me.shikhov"
                 artifactId = "setupwizard"
-                version = "1.0.0"
+                version = "1.1.0"
 
                 artifact("$buildDir/outputs/aar/setupwizard-release.aar")
                 artifact(androidSourcesJar)
@@ -147,7 +134,7 @@ afterEvaluate {
     }
 
     signing {
-        sign(publishing.publications.getByName("release"))
-//        useInMemoryPgpKeys(signingKeyId, signingSecretKeyRingFile, signingPassword)
+        sign(publishing.publications["release"])
     }
 }
+
